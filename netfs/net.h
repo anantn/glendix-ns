@@ -35,3 +35,9 @@ void cs_create_files (struct super_block *, struct dentry *);
 void tcp_create_files (struct super_block *, struct dentry *);
 void ether_create_files (struct super_block *, struct dentry *);
 
+/*
+ * File processing of instructions written to individual file
+ */
+void slashnet_cs_process (struct file *);
+void tcp_clone_process (struct file *);
+

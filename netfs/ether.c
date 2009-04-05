@@ -17,7 +17,6 @@ void ether_create_files (struct super_block *sb, struct dentry *root)
 	memset (ether_tmp, 0, TMPSIZE);
 	/* if ether0 exists */
 	slashnet_create_dir(sb, root, "ether0");
-	kfree(ether_tmp);
 }
 
 

@@ -16,7 +16,6 @@ void cs_create_files (struct super_block *sb, struct dentry *root)
 	cs_tmp = kmalloc(TMPSIZE, GFP_KERNEL);
 	memset (cs_tmp, 0, TMPSIZE);
 	slashnet_create_file(sb, root, "cs", cs_tmp);
-	//kfree(cs_tmp);
 /* 
  * NOTE: cs_tmp should not be free'd here because the same memory 
  * is being assigned to inode->-_private in the main program. 
@@ -26,5 +25,15 @@ void cs_create_files (struct super_block *sb, struct dentry *root)
 
 }
 
+/*
+ * Processing the written instructions
+ */
+
+void slashnet_cs_process (struct file *filp)
+{
+	char *tmp;
+	tmp = (char *)(filp->private_data);
+	strcat(tmp, ":processed");
+}
 
 

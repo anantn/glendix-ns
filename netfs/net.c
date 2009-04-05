@@ -66,14 +66,6 @@ static ssize_t slashnet_read_file(struct file *filp, char *dnsquery,
 	if (retval)
 		return -EFAULT;
 	
-	/* debug */
-	/*
-	printk("*** value buffer has in read_file: %s ***\n", buffer);
-	printk("*** value of retval in copy_to_user: %d ***\n", retval);
-	printk("*** value of offset in read_file: %d ***\n", (int) *offset);
-	printk("*** value of count in read_file: %d ***\n", count);
-	printk("*** value of len in read_file: %d ***\n", len);
-	*/
 	*offset += count;
 	return count;
 }
@@ -94,8 +86,17 @@ static ssize_t slashnet_write_file(struct file *filp, const char *dnsquery,
 	if(copy_from_user(tmp, dnsquery, count))
 		return -EFAULT;
 	tmp[count-1] = '\0';
+	
+	if (!strcmp(filp->f_dentry->d_name.name, "clone") && 
+		!strcmp(filp->f_dentry->d_parent->d_name.name, "tcp"))
+		tcp_clone_process(filp);
+	else if (!strcmp(filp->f_dentry->d_name.name, "cs") && 
+		!strcmp(filp->f_dentry->d_parent->d_name.name, "/"))
+		slashnet_cs_process(filp);
+
 	/* debug */
-	printk("*** value buffer has in write_file: %s ***\n", (char *) filp->private_data);
+	printk("*** %s/%s: %s ***\n", filp->f_dentry->d_parent->d_name.name,
+		filp->f_dentry->d_name.name, (char *) filp->private_data);
 	
 	return count;
 }
@@ -109,7 +110,6 @@ static struct file_operations slashnet_file_ops = {
 	.read 	= slashnet_read_file,
 	.write  = slashnet_write_file,
 };
-
 
 /*
  * Create a file.
@@ -137,8 +137,6 @@ struct dentry *slashnet_create_file (struct super_block *sb,
 		goto out_dput;
 	inode->i_fop = &slashnet_file_ops;
 	inode->i_private = initval;
-	/* debug */
-	//printk("*** %s: initial val is %s ***\n", name, initval);
 
 /*
  * Put it all into the dentry cache and we're done.
