@@ -1,0 +1,19 @@
+Module Lisence: GPL
+Module parent project: Glendix
+Module Author: Rahul Murmuria
+
+INSTALL HOWTO
+$ cd glendix/netfs
+$ make
+$ insmod plan9_net.ko
+$ mkdir /net
+$ mount -t net none /net
+
+TEST EXAMPLE
+$ echo "Try writing to" > /net/cs
+$ echo "Also try writing to" > /net/tcp/stats
+$ cat /net/cs
+$ cat /net/tcp/stats
+
+CHECK DEBUG MESSAGES
+$ dmesg
