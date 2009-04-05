@@ -10,8 +10,6 @@
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Rahul Murmuria <rahul@murmuria.in>");
 
-static char *buffer;
-
 inline unsigned int blksize_bits(unsigned int size)
 {
     unsigned int bits = 8;
@@ -46,7 +44,6 @@ static struct inode *slashnet_make_inode(struct super_block *sb, int mode)
  */
 static int slashnet_open(struct inode *inode, struct file *filp)
 {
-	inode->i_private = kmalloc(TMPSIZE, GFP_KERNEL);
 	filp->private_data = inode->i_private;
 	return 0;
 }
@@ -58,13 +55,13 @@ static ssize_t slashnet_read_file(struct file *filp, char *dnsquery,
 		size_t count, loff_t *offset)
 {
 	int len, retval;
-	len = strlen(buffer);
+	len = strlen(filp->private_data);
 	if (*offset > len)
 		return 0;
 	if (count > len - *offset)
 		count = len - *offset;
 	
-	retval = copy_to_user(dnsquery, buffer + *offset, count);
+	retval = copy_to_user(dnsquery, filp->private_data + *offset, count);
 
 	if (retval)
 		return -EFAULT;
@@ -87,8 +84,8 @@ static ssize_t slashnet_read_file(struct file *filp, char *dnsquery,
 static ssize_t slashnet_write_file(struct file *filp, const char *dnsquery,
 		size_t count, loff_t *offset)
 {
-	char tmp[TMPSIZE];
-	buffer = (char *)(filp->private_data);
+	char *tmp;
+	tmp = (char *)(filp->private_data);
 	
 	if (*offset != 0)
 		return -EINVAL;
@@ -97,15 +94,8 @@ static ssize_t slashnet_write_file(struct file *filp, const char *dnsquery,
 	if(copy_from_user(tmp, dnsquery, count))
 		return -EFAULT;
 	tmp[count-1] = '\0';
-	memcpy (buffer, tmp, count);
 	/* debug */
 	printk("*** value buffer has in write_file: %s ***\n", (char *) filp->private_data);
-	
-/* 
- * Although private_data has required info here, it doesnot retain 
- * its value by the time we reach slashnet_read_file. Hence we are 
- * currently using a static global variable, buffer. 
- */
 	
 	return count;
 }
@@ -148,7 +138,7 @@ struct dentry *slashnet_create_file (struct super_block *sb,
 	inode->i_fop = &slashnet_file_ops;
 	inode->i_private = initval;
 	/* debug */
-	printk("*** %s: initial val is %s ***\n", name, initval);
+	//printk("*** %s: initial val is %s ***\n", name, initval);
 
 /*
  * Put it all into the dentry cache and we're done.

@@ -16,7 +16,14 @@ void cs_create_files (struct super_block *sb, struct dentry *root)
 	cs_tmp = kmalloc(TMPSIZE, GFP_KERNEL);
 	memset (cs_tmp, 0, TMPSIZE);
 	slashnet_create_file(sb, root, "cs", cs_tmp);
-	kfree(cs_tmp);
+	//kfree(cs_tmp);
+/* 
+ * NOTE: cs_tmp should not be free'd here because the same memory 
+ * is being assigned to inode->-_private in the main program. 
+ * It is desirable to have this memory allotted for every file 
+ * as long as the filesystem is mount on a directory.
+ */
+
 }
 
 
