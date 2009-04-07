@@ -1,5 +1,6 @@
 /*
- * Copyright 2009 Rahul Murmuria <rahul@murmuria.in>
+ * Copyright 2009 The Glendix Project
+ * Author: Rahul Murmuria <rahul@murmuria.in>
  * This file may be redistributed under the terms of the GNU GPL.
  */
 #include <linux/fs.h>

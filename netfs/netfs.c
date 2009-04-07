@@ -1,14 +1,15 @@
 /*
- * Copyright 2009 Rahul Murmuria <rahul@murmuria.in>
+ * Copyright 2009 The Glendix Project
+ * Author(s): Rahul Murmuria <rahul at murmuria dot in>
  * This file may be redistributed under the terms of the GNU GPL.
- * Most of this program has been adapted from the design of lwnfs 
- * from http://lwn.net which is a sample implementation over libfs.
+ * 
+ * Code design courtesy of http://lwn.net
  */
 
-#include "net.h"
+#include "netfs.h"
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Rahul Murmuria <rahul@murmuria.in>");
+MODULE_AUTHOR("Rahul Murmuria <rahul at murmuria dot in>");
 
 inline unsigned int blksize_bits(unsigned int size)
 {

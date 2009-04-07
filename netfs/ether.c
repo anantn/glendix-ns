@@ -5,7 +5,7 @@
 
 #define __NO_VERSION__
 
-#include "net.h"
+#include "netfs.h"
 /*
  * Create the files that we export.
  */
