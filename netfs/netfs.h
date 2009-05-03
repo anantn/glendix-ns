@@ -30,10 +30,19 @@ struct dentry *slashnet_create_dir (struct super_block *,
 		struct dentry *, const char *);
 
 /*
+ * Function to create new connection folder named n
+ * to be called when the net folder n-1 is busy.
+ */
+
+struct dentry *slashnet_create_netfolder (struct super_block *, 
+		struct dentry *, const char *);
+
+/*
  * Create the files that we export.
  */
 void cs_create_files (struct super_block *, struct dentry *);
 void tcp_create_files (struct super_block *, struct dentry *);
+void udp_create_files (struct super_block *, struct dentry *);
 void ether_create_files (struct super_block *, struct dentry *);
 
 /*
@@ -41,4 +50,7 @@ void ether_create_files (struct super_block *, struct dentry *);
  */
 void slashnet_cs_process (struct file *);
 void tcp_clone_process (struct file *);
+void udp_clone_process (struct file *);
+void tcp_n_ctl_process (struct file *);
+void tcp_n_data_process (struct file *);
 

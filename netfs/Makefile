@@ -1,5 +1,5 @@
 TARGET = plan9_net
-OBJS = netfs.o cs.o tcp.o ether.o
+OBJS = netfs.o cs.o tcp.o udp.o ether.o
 
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)

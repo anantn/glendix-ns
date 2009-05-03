@@ -91,13 +91,19 @@ static ssize_t slashnet_write_file(struct file *filp, const char *dnsquery,
 	if (!strcmp(filp->f_dentry->d_name.name, "clone") && 
 		!strcmp(filp->f_dentry->d_parent->d_name.name, "tcp"))
 		tcp_clone_process(filp);
+	else if (!strcmp(filp->f_dentry->d_name.name, "ctl") &&
+		!strcmp(filp->f_dentry->d_parent->d_parent->d_name.name,"tcp"))
+		tcp_n_ctl_process(filp);
+	else if (!strcmp(filp->f_dentry->d_name.name, "data") &&
+		!strcmp(filp->f_dentry->d_parent->d_parent->d_name.name,"tcp"))
+		tcp_n_data_process(filp);
 	else if (!strcmp(filp->f_dentry->d_name.name, "cs") && 
 		!strcmp(filp->f_dentry->d_parent->d_name.name, "/"))
 		slashnet_cs_process(filp);
 
 	/* debug */
-	printk("*** %s/%s: %s ***\n", filp->f_dentry->d_parent->d_name.name,
-		filp->f_dentry->d_name.name, (char *) filp->private_data);
+//	printk("*** %s/%s: %s ***\n", filp->f_dentry->d_parent->d_name.name,
+//		filp->f_dentry->d_name.name, (char *) filp->private_data);
 	
 	return count;
 }
@@ -189,6 +195,31 @@ struct dentry *slashnet_create_dir (struct super_block *sb,
 }
 
 
+/*
+ * Function to create new connection folder named n
+ * to be called when the net folder n-1 is busy.
+ */
+
+struct dentry *slashnet_create_netfolder(struct super_block *sb, 
+				struct dentry *dir, const char *n)
+{
+	static char *ctl_tmp, *data_tmp;
+	struct dentry *subdir;
+
+	subdir = slashnet_create_dir(sb, dir, n);
+	if (subdir) {
+		ctl_tmp = kmalloc(TMPSIZE, GFP_KERNEL);
+		memset (ctl_tmp, 0, TMPSIZE);
+		slashnet_create_file(sb, subdir, "ctl", ctl_tmp);
+
+		data_tmp = kmalloc(TMPSIZE, GFP_KERNEL);
+		memset (data_tmp, 0, TMPSIZE);
+		slashnet_create_file(sb, subdir, "data", data_tmp);
+	}
+
+	return subdir;
+}
+
 
 /*
  * Create the files that we export.
@@ -198,10 +229,9 @@ static void slashnet_create_files (struct super_block *sb, struct dentry *root)
 {
 	cs_create_files (sb, root);
 	tcp_create_files (sb, root);
+	udp_create_files (sb, root);
 	ether_create_files (sb, root);
 }
-
-
 
 
 /*
