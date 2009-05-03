@@ -57,8 +57,10 @@ void tcp_clone_process (struct file *filp)
 void tcp_n_ctl_process (struct file *filp)
 {
 	char *tmp, *ip, *ip_tmp, *port;
-	int tmp_size, counter;
+	int tmp_size, counter, ret;
+	struct dentry *parent;
 
+	parent = filp->f_dentry->d_parent;
 	tmp = (char *)(filp->private_data);
 	tmp_size = strlen(tmp);
 
@@ -81,7 +83,12 @@ void tcp_n_ctl_process (struct file *filp)
 		memcpy (port, tmp, 6);
 		port[5] = '\0';
 		/* debug */
-		printk("***Connect to %s port %s ***\n", ip, port);
+		printk("***Connecting to %s port %s ***\n", ip, port);
+
+		ret = socknet_connect(parent, AF_INET, SOCK_STREAM, 0,
+			ip, port);
+		if(ret<0) 
+			printk("Connection to %s failed!", ip);
 	}
 }
 

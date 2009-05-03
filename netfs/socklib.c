@@ -13,7 +13,13 @@
 
 #include "socklib.h"
 
-/* BSD socket wrapper */
+/* 
+ * BSD socket wrapper 
+ */
+
+/*
+ * Create a new socket
+ */
 int socknet_create(struct dentry *dir, int domain, int type, int protocol)
 {
 	struct socket *sock = NULL;
@@ -25,13 +31,38 @@ int socknet_create(struct dentry *dir, int domain, int type, int protocol)
 	return ret;
 }
 
-int socknet_connect(struct dentry *dir, struct sockaddr *uaddr, int addr_len)
+/*
+ * Create a new socket and connect : Client-side-only code
+ */
+int socknet_connect(struct dentry *dir, int domain, int type, 
+		int protocol, char *ip, char *port)
 {
-	struct socket *sock;
-	int ret;
+	struct socket *sock = NULL;
+	struct sockaddr_in addr;
+	int ret = 0, in_port;
+	
+	ret = sock_create(domain, type, protocol, &sock);
+	if (ret < 0) {
+		printk("Error sock_create\n");
+		return ret;
+	}
 
-	sock = (struct socket *)(dir->d_inode->i_private);
-	ret = sock->ops->connect(sock, uaddr, addr_len, sock->file->f_flags);
+	dir->d_inode->i_private = sock;
+	printk("Kernel socket created on directory %s/%s\n", 
+			(dir->d_parent->d_name.name), (dir->d_name.name));
+	
+	addr.sin_family = domain;
+	in_port = in_aton(port);
+	addr.sin_port = htons(in_port);
+	addr.sin_addr.s_addr = in_aton(ip);
+	
+	ret = sock->ops->connect(sock, (struct sockaddr *)&addr, 
+			sizeof(addr), sock->file->f_flags);
+	if (ret < 0) {
+		printk("Error sock->ops->connect\n");
+	} else {
+		printk("Got connected!\n");
+	}
 	
 	return ret;
 }
@@ -42,7 +73,7 @@ ssize_t socknet_recv(struct file *filp, int flags)
 	struct socket *sock;
 	struct msghdr msg;
 	struct iovec iov;
-	int ret;
+	int ret, length;
 	mm_segment_t old_fs;
 
 	sock = (struct socket *)(filp->f_dentry->d_parent->d_inode->i_private);

@@ -5,6 +5,7 @@
  */
 
 #include <linux/socket.h>
+#include <linux/inet.h>
 #include <linux/net.h>
 #include <linux/in.h>
 #include <net/sock.h>
@@ -14,7 +15,7 @@
 
 int socknet_create(struct dentry *, int, int, int);
 int socknet_close(struct dentry *);
-int socknet_connect(struct dentry *, struct sockaddr *, int);
+int socknet_connect(struct dentry *, int, int, int, char *, char *);
 ssize_t socknet_recv(struct file *, int);
 ssize_t socknet_send(struct file *, int flags);
 

@@ -14,6 +14,8 @@
 #include <asm/atomic.h>
 #include <asm/uaccess.h>
 
+#include "socklib.h"
+
 #define NET_MAGIC 0x19980122
 #define TMPSIZE 128
 
