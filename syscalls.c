@@ -389,7 +389,7 @@ asmlinkage long sys_plan9_rfork(struct pt_regs regs)
 
 		if (flags & RFCNAMEG) {
 			printk(KERN_INFO "rfork with RFCNAMEG called, unsharing!\n");
-			//return_value = sys_unshare(CLONE_NEWNS);
+			return_value = sys_unshare(CLONE_NEWNS);
 			printk(KERN_INFO "return value of sys_unshare is: %d\n", return_value);
 		}
 		if (flags & RFFDG) {
@@ -403,3 +403,21 @@ asmlinkage long sys_plan9_rfork(struct pt_regs regs)
 	return ret;
 }
 
+
+asmlinkage long sys_plan9_mount()
+{
+	
+	int ret_unshare, ret_mount;
+	char *dirname = "/tmp/tt";	
+
+	ret_unshare = sys_unshare(CLONE_NEWNS);
+	if(ret_unshare != 0)
+		printk(KERN_INFO "problem in unshare in function sys_plan9_mount\n return value of unshare is %d", ret_unshare);
+	
+	//currently, I just hard coded the parameters in mount just to check if it works fine 
+	ret_mount = sys_mount(dirname, "/tmp", "none", MS_BIND, NULL);
+	if(ret_mount != 0)
+		printk(KERN_INFO "problem in mount and return value of sys_mount is %d", ret_mount);
+	
+	return ret_mount;
+}
