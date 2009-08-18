@@ -19,6 +19,8 @@
 
 #include "p9_constants.h"
 
+
+#define TYPE_MAX 20
 asmlinkage long sys_plan9_unimplemented(struct pt_regs regs)
 {
 	if (printk_ratelimit())
@@ -98,6 +100,7 @@ asmlinkage long sys_plan9_open(struct pt_regs regs)
 
 	/* Special case for '#c/pid' */
 	if ((len = strncpy_from_user(path, file, PATH_MAX)) < 0) {
+		printk(KERN_INFO "in if condition of strncpy_from_user\n");
 		return -EFAULT;
 	}
 	path[len] = '\0';
@@ -400,24 +403,92 @@ asmlinkage long sys_plan9_rfork(struct pt_regs regs)
 		}
 	}*/
 
-	return ret;
+	return return_value;
 }
 
 
-asmlinkage long sys_plan9_mount()
+asmlinkage long sys_plan9_mount(struct pt_regs regs)
 {
-	
-	int ret_unshare, ret_mount;
-	char *dirname = "/tmp/tt";	
+	unsigned long *addr = (unsigned long *)regs.sp;
+	unsigned long type;		
+	//char str[MAX_LEN];
 
+	int ret_unshare, ret_mount;
+	//char *dev_name = "/tmp/tt";	
+	char *dev_name, *dir_name;
+	printk("P9: %x system call has been called\n",regs.ax);
+
+	
+	get_user(dev_name, ++addr);
+	get_user(dir_name, ++addr);
+	get_user(type, ++addr);
+	/*addr++;
+	ret1 = copy_from_user(str,addr,MAX_LEN);
+	printk("flag1=  %s\n",*str);
+
+	*/	
 	ret_unshare = sys_unshare(CLONE_NEWNS);
+
 	if(ret_unshare != 0)
 		printk(KERN_INFO "problem in unshare in function sys_plan9_mount\n return value of unshare is %d", ret_unshare);
 	
-	//currently, I just hard coded the parameters in mount just to check if it works fine 
-	ret_mount = sys_mount(dirname, "/tmp", "none", MS_BIND, NULL);
-	if(ret_mount != 0)
-		printk(KERN_INFO "problem in mount and return value of sys_mount is %d", ret_mount);
+	if(type & MREPL){
 	
+		ret_mount = glendix_sys_mount(dev_name, dir_name, NULL, MS_BIND, NULL);
+		printk(KERN_INFO "return value of sys_mount is ret_mount = %d\n", ret_mount);
+	
+		if(ret_mount != 0)
+			printk(KERN_INFO "problem in sys_plan9_mount and return value of sys_mount is %d", ret_mount);
+	}
+	if(type & (MBEFORE | MAFTER)){
+			
+		ret_mount = glendix_sys_mount(dev_name, dir_name, "aufs", MS_BIND, NULL);
+		printk(KERN_INFO "return value of sys_mount is ret_mount = %d\n", ret_mount);
+	
+		if(ret_mount != 0)
+			printk(KERN_INFO "problem in sys_plan9_mount and return value of sys_mount is %d", ret_mount);
+	}
+
 	return ret_mount;
+}
+
+
+
+/* It will also be same as mount except the arguments it will have */
+asmlinkage long sys_plan9_bind(struct pt_regs regs)
+{
+	unsigned long *addr = (unsigned long *)regs.sp;
+	unsigned long type;		
+	int ret_unshare, ret_mount;
+        //char *dirname = "/tmp/tt";
+	
+	char *dev_name, *dir_name;
+	printk("P9: %x system call has been called\n",regs.ax);
+
+	get_user(dev_name, ++addr);
+	get_user(dir_name, ++addr);
+	get_user(type, ++addr);
+	
+	ret_unshare = sys_unshare(CLONE_NEWNS);
+	printk(KERN_INFO "return value of sys_unshare ret_unshare is = %d", ret_unshare);
+	if(ret_unshare != 0)
+		printk(KERN_INFO "problem in unshare in function sys_plan9_bind\n return value of unshare is %d", ret_unshare);
+		
+	if(type & MREPL){
+
+		ret_mount = glendix_sys_mount(dev_name, dir_name, NULL, MS_BIND, NULL);
+		if(ret_mount != 0)
+			printk(KERN_INFO "problem in sys_plan9_bind and return value of sys_mount is %d", ret_mount);
+	
+		return ret_mount; 
+	}
+
+	if(type & (MBEFORE | MAFTER)){
+			
+		ret_mount = glendix_sys_mount(dev_name, dir_name, "aufs", MS_BIND, NULL);
+		printk(KERN_INFO "return value of sys_mount is ret_mount = %d\n", ret_mount);
+	
+		if(ret_mount != 0)
+			printk(KERN_INFO "problem in sys_plan9_mount and return value of sys_mount is %d", ret_mount);
+	}
 }
